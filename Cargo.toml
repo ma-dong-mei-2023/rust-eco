@@ -1,0 +1,51 @@
+[package]
+name = "rust-eco"
+version = "0.1.0"
+edition = "2021"
+authors = ["Claude Code <noreply@anthropic.com>"]
+description = "A Rust async runtime inspired by lua-eco, providing lightweight coroutines and built-in modules for high-performance applications"
+license = "MIT"
+keywords = ["async", "runtime", "coroutines", "networking"]
+categories = ["asynchronous", "network-programming"]
+
+[dependencies]
+tokio = { version = "1.0", features = ["full"] }
+tokio-util = "0.7"
+futures = "0.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+bytes = "1.0"
+uuid = { version = "1.0", features = ["v4"] }
+
+# Networking
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
+tungstenite = "0.20"
+tokio-tungstenite = "0.20"
+futures = "0.3"
+url = "2.4"
+
+# Protocols
+rumqttc = "0.24"
+
+# System
+nix = "0.27"
+hostname = "0.3"
+chrono = { version = "1.0", features = ["serde"] }
+
+# CLI
+clap = "3.2"
+tempfile = "3.0"
+
+[dev-dependencies]
+tokio-test = "0.4"
+
+[[bin]]
+name = "eco"
+path = "src/bin/eco.rs"
+
+[lib]
+name = "rust_eco"
+path = "src/lib.rs"
