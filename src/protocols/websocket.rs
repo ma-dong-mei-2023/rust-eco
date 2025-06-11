@@ -82,7 +82,7 @@ impl WebSocketClient {
     ) -> crate::Result<Self> {
         let (mut sink, mut stream) = ws_stream.split();
         let (msg_tx, msg_rx) = mpsc::unbounded_channel();
-        let (send_tx, mut send_rx) = mpsc::unbounded_channel();
+        let (send_tx, mut send_rx) = mpsc::unbounded_channel::<WebSocketMessage>();
 
         // Spawn task to handle outgoing messages
         let sink_handle = tokio::spawn(async move {
@@ -212,7 +212,7 @@ impl WebSocketConnection {
     ) -> crate::Result<Self> {
         let (mut sink, mut stream) = ws_stream.split();
         let (msg_tx, msg_rx) = mpsc::unbounded_channel();
-        let (send_tx, mut send_rx) = mpsc::unbounded_channel();
+        let (send_tx, mut send_rx) = mpsc::unbounded_channel::<WebSocketMessage>();
 
         // Spawn task to handle outgoing messages
         let sink_handle = tokio::spawn(async move {

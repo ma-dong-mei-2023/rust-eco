@@ -1,4 +1,5 @@
-use std::net::{SocketAddr, ToSocketAddrs};
+use std::net::SocketAddr;
+use tokio::net::ToSocketAddrs;
 use tokio::net::{TcpListener, TcpStream, UdpSocket};
 use tokio::io::{AsyncReadExt, AsyncWriteExt, BufReader, AsyncBufReadExt};
 use bytes::Bytes;

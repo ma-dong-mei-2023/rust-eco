@@ -172,7 +172,7 @@ async fn run_demo(eco: &Eco) -> Result<(), Box<dyn std::error::Error>> {
         }
 
         println!("\nDemo completed successfully!");
-    }).await?;
+    }).map_err(|e| format!("Demo error: {}", e))?;
 
     Ok(())
 }

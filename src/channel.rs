@@ -286,7 +286,9 @@ impl<T> OneShot<T> {
         if let Some(receiver) = self.receiver.take() {
             receiver.await
         } else {
-            Err(oneshot::error::RecvError(()))
+            // Create a closed channel to get a proper RecvError
+            let (_, rx) = oneshot::channel::<T>();
+            rx.await
         }
     }
 
@@ -330,7 +332,9 @@ impl<T> OneShotReceiver<T> {
         if let Some(receiver) = self.receiver.take() {
             receiver.await
         } else {
-            Err(oneshot::error::RecvError(()))
+            // Create a closed channel to get a proper RecvError
+            let (_, rx) = oneshot::channel::<T>();
+            rx.await
         }
     }
 

@@ -45,7 +45,10 @@ impl Eco {
                         return Err(crate::EcoError::Runtime(format!("Task panicked: {}", e)).into());
                     }
                 }
-                _ = shutdown_rx.lock().await.recv() => {
+                _ = async {
+                    let mut guard = shutdown_rx.lock().await;
+                    guard.recv().await
+                } => {
                     debug!("Shutdown signal received");
                 }
             }

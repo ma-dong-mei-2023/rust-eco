@@ -13,14 +13,14 @@ impl<T> Mutex<T> {
         }
     }
 
-    pub async fn lock(&self) -> MutexGuard<T> {
+    pub async fn lock(&self) -> MutexGuard<'_, T> {
         MutexGuard {
             guard: self.inner.lock().await,
         }
     }
 
-    pub fn try_lock(&self) -> Option<MutexGuard<T>> {
-        self.inner.try_lock().ok().map(|guard| MutexGuard { guard })
+    pub fn try_lock(&self) -> Option<MutexGuard<'_, T>> {
+        self.inner.try_lock().ok().map(move |guard| MutexGuard { guard })
     }
 }
 
@@ -32,11 +32,11 @@ impl<T> Clone for Mutex<T> {
     }
 }
 
-pub struct MutexGuard<T> {
-    guard: tokio::sync::MutexGuard<'static, T>,
+pub struct MutexGuard<'a, T> {
+    guard: tokio::sync::MutexGuard<'a, T>,
 }
 
-impl<T> std::ops::Deref for MutexGuard<T> {
+impl<'a, T> std::ops::Deref for MutexGuard<'a, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -44,7 +44,7 @@ impl<T> std::ops::Deref for MutexGuard<T> {
     }
 }
 
-impl<T> std::ops::DerefMut for MutexGuard<T> {
+impl<'a, T> std::ops::DerefMut for MutexGuard<'a, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.guard
     }
@@ -61,24 +61,24 @@ impl<T> ReadWriteLock<T> {
         }
     }
 
-    pub async fn read(&self) -> ReadGuard<T> {
+    pub async fn read(&self) -> ReadGuard<'_, T> {
         ReadGuard {
             guard: self.inner.read().await,
         }
     }
 
-    pub async fn write(&self) -> WriteGuard<T> {
+    pub async fn write(&self) -> WriteGuard<'_, T> {
         WriteGuard {
             guard: self.inner.write().await,
         }
     }
 
-    pub fn try_read(&self) -> Option<ReadGuard<T>> {
-        self.inner.try_read().ok().map(|guard| ReadGuard { guard })
+    pub fn try_read(&self) -> Option<ReadGuard<'_, T>> {
+        self.inner.try_read().ok().map(move |guard| ReadGuard { guard })
     }
 
-    pub fn try_write(&self) -> Option<WriteGuard<T>> {
-        self.inner.try_write().ok().map(|guard| WriteGuard { guard })
+    pub fn try_write(&self) -> Option<WriteGuard<'_, T>> {
+        self.inner.try_write().ok().map(move |guard| WriteGuard { guard })
     }
 }
 
@@ -90,11 +90,11 @@ impl<T> Clone for ReadWriteLock<T> {
     }
 }
 
-pub struct ReadGuard<T> {
-    guard: tokio::sync::RwLockReadGuard<'static, T>,
+pub struct ReadGuard<'a, T> {
+    guard: tokio::sync::RwLockReadGuard<'a, T>,
 }
 
-impl<T> std::ops::Deref for ReadGuard<T> {
+impl<'a, T> std::ops::Deref for ReadGuard<'a, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -102,11 +102,11 @@ impl<T> std::ops::Deref for ReadGuard<T> {
     }
 }
 
-pub struct WriteGuard<T> {
-    guard: tokio::sync::RwLockWriteGuard<'static, T>,
+pub struct WriteGuard<'a, T> {
+    guard: tokio::sync::RwLockWriteGuard<'a, T>,
 }
 
-impl<T> std::ops::Deref for WriteGuard<T> {
+impl<'a, T> std::ops::Deref for WriteGuard<'a, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -114,7 +114,7 @@ impl<T> std::ops::Deref for WriteGuard<T> {
     }
 }
 
-impl<T> std::ops::DerefMut for WriteGuard<T> {
+impl<'a, T> std::ops::DerefMut for WriteGuard<'a, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.guard
     }

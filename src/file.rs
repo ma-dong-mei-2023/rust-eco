@@ -114,23 +114,25 @@ pub async fn walk_dir<P: AsRef<Path>>(
     path: P,
     mut callback: impl FnMut(&Path) -> bool,
 ) -> crate::Result<()> {
-    async fn walk_recursive<F>(path: &Path, callback: &mut F) -> crate::Result<()>
+    fn walk_recursive<'a, F>(path: &'a Path, callback: &'a mut F) -> std::pin::Pin<Box<dyn std::future::Future<Output = crate::Result<()>> + 'a>>
     where
         F: FnMut(&Path) -> bool,
     {
-        if !callback(path) {
-            return Ok(());
-        }
-        
-        if let Ok(metadata) = fs::metadata(path).await {
-            if metadata.is_dir() {
-                let mut dir = fs::read_dir(path).await?;
-                while let Some(entry) = dir.next_entry().await? {
-                    walk_recursive(&entry.path(), callback).await?;
+        Box::pin(async move {
+            if !callback(path) {
+                return Ok(());
+            }
+            
+            if let Ok(metadata) = fs::metadata(path).await {
+                if metadata.is_dir() {
+                    let mut dir = fs::read_dir(path).await?;
+                    while let Some(entry) = dir.next_entry().await? {
+                        walk_recursive(&entry.path(), callback).await?;
+                    }
                 }
             }
-        }
-        Ok(())
+            Ok(())
+        })
     }
     
     walk_recursive(path.as_ref(), &mut callback).await

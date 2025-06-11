@@ -57,31 +57,41 @@ impl Logger {
 
     pub fn trace(&self, message: &str) {
         if self.level <= LogLevel::Trace {
-            trace!(target: &self.target, "{}", message);
+            let span = tracing::span!(tracing::Level::TRACE, "log", target = %self.target);
+            let _enter = span.enter();
+            tracing::trace!("{}", message);
         }
     }
 
     pub fn debug(&self, message: &str) {
         if self.level <= LogLevel::Debug {
-            debug!(target: &self.target, "{}", message);
+            let span = tracing::span!(tracing::Level::DEBUG, "log", target = %self.target);
+            let _enter = span.enter();
+            tracing::debug!("{}", message);
         }
     }
 
     pub fn info(&self, message: &str) {
         if self.level <= LogLevel::Info {
-            info!(target: &self.target, "{}", message);
+            let span = tracing::span!(tracing::Level::INFO, "log", target = %self.target);
+            let _enter = span.enter();
+            tracing::info!("{}", message);
         }
     }
 
     pub fn warn(&self, message: &str) {
         if self.level <= LogLevel::Warn {
-            warn!(target: &self.target, "{}", message);
+            let span = tracing::span!(tracing::Level::WARN, "log", target = %self.target);
+            let _enter = span.enter();
+            tracing::warn!("{}", message);
         }
     }
 
     pub fn error(&self, message: &str) {
         if self.level <= LogLevel::Error {
-            error!(target: &self.target, "{}", message);
+            let span = tracing::span!(tracing::Level::ERROR, "log", target = %self.target);
+            let _enter = span.enter();
+            tracing::error!("{}", message);
         }
     }
 

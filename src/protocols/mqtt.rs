@@ -65,7 +65,6 @@ impl MqttMessage {
 
 pub struct MqttClient {
     client: Client,
-    connection: Connection,
     message_rx: mpsc::UnboundedReceiver<MqttMessage>,
 }
 
@@ -115,7 +114,7 @@ impl MqttClient {
         let message_tx_clone = message_tx.clone();
         tokio::spawn(async move {
             loop {
-                match connection.poll().await {
+                match connection.eventloop.poll().await {
                     Ok(Event::Incoming(Packet::Publish(publish))) => {
                         let message = MqttMessage {
                             topic: publish.topic,
@@ -144,12 +143,11 @@ impl MqttClient {
 
         Ok(Self {
             client,
-            connection,
             message_rx,
         })
     }
 
-    pub async fn publish(&self, message: &MqttMessage) -> crate::Result<()> {
+    pub fn publish(&self, message: &MqttMessage) -> crate::Result<()> {
         self.client
             .publish(
                 &message.topic,
@@ -157,13 +155,12 @@ impl MqttClient {
                 message.retain,
                 message.payload.clone(),
             )
-            .await
             .map_err(|e| format!("Failed to publish message: {}", e))?;
         
         Ok(())
     }
 
-    pub async fn publish_string(
+    pub fn publish_string(
         &self,
         topic: &str,
         payload: &str,
@@ -177,22 +174,20 @@ impl MqttClient {
             retain,
         };
         
-        self.publish(&message).await
+        self.publish(&message)
     }
 
-    pub async fn subscribe(&self, topic: &str, qos: QoS) -> crate::Result<()> {
+    pub fn subscribe(&self, topic: &str, qos: QoS) -> crate::Result<()> {
         self.client
             .subscribe(topic, qos.into())
-            .await
             .map_err(|e| format!("Failed to subscribe to topic: {}", e))?;
         
         Ok(())
     }
 
-    pub async fn unsubscribe(&self, topic: &str) -> crate::Result<()> {
+    pub fn unsubscribe(&self, topic: &str) -> crate::Result<()> {
         self.client
             .unsubscribe(topic)
-            .await
             .map_err(|e| format!("Failed to unsubscribe from topic: {}", e))?;
         
         Ok(())
@@ -209,7 +204,6 @@ impl MqttClient {
     pub async fn disconnect(self) -> crate::Result<()> {
         self.client
             .disconnect()
-            .await
             .map_err(|e| format!("Failed to disconnect: {}", e))?;
         
         Ok(())

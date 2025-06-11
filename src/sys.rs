@@ -121,7 +121,7 @@ async fn get_memory_info() -> crate::Result<MemoryInfo> {
 }
 
 pub struct Process {
-    child: Child,
+    child: Option<Child>,
 }
 
 impl Process {
@@ -134,7 +134,7 @@ impl Process {
         
         let child = cmd.spawn()?;
         
-        Ok(Self { child })
+        Ok(Self { child: Some(child) })
     }
 
     pub async fn spawn_shell(command: &str) -> crate::Result<Self> {
@@ -156,15 +156,16 @@ impl Process {
             .stdin(Stdio::piped())
             .spawn()?;
         
-        Ok(Self { child })
+        Ok(Self { child: Some(child) })
     }
 
     pub fn id(&self) -> Option<u32> {
-        self.child.id()
+        self.child.as_ref()?.id()
     }
 
     pub async fn wait(&mut self) -> crate::Result<ProcessOutput> {
-        let output = self.child.wait_with_output().await?;
+        let child = self.child.take().ok_or("Process already waited on")?;
+        let output = child.wait_with_output().await?;
         
         Ok(ProcessOutput {
             status: output.status.code().unwrap_or(-1),
@@ -174,34 +175,40 @@ impl Process {
     }
 
     pub async fn kill(&mut self) -> crate::Result<()> {
-        self.child.kill().await?;
+        if let Some(ref mut child) = self.child {
+            child.kill().await?;
+        }
         Ok(())
     }
 
     pub async fn write_stdin(&mut self, data: &[u8]) -> crate::Result<()> {
-        if let Some(stdin) = self.child.stdin.as_mut() {
-            stdin.write_all(data).await?;
-            stdin.flush().await?;
+        if let Some(ref mut child) = self.child {
+            if let Some(stdin) = child.stdin.as_mut() {
+                stdin.write_all(data).await?;
+                stdin.flush().await?;
+            }
         }
         Ok(())
     }
 
     pub async fn read_stdout(&mut self, buf: &mut [u8]) -> crate::Result<usize> {
-        if let Some(stdout) = self.child.stdout.as_mut() {
-            let n = stdout.read(buf).await?;
-            Ok(n)
-        } else {
-            Ok(0)
+        if let Some(ref mut child) = self.child {
+            if let Some(stdout) = child.stdout.as_mut() {
+                let n = stdout.read(buf).await?;
+                return Ok(n);
+            }
         }
+        Ok(0)
     }
 
     pub async fn read_stderr(&mut self, buf: &mut [u8]) -> crate::Result<usize> {
-        if let Some(stderr) = self.child.stderr.as_mut() {
-            let n = stderr.read(buf).await?;
-            Ok(n)
-        } else {
-            Ok(0)
+        if let Some(ref mut child) = self.child {
+            if let Some(stderr) = child.stderr.as_mut() {
+                let n = stderr.read(buf).await?;
+                return Ok(n);
+            }
         }
+        Ok(0)
     }
 }
 
