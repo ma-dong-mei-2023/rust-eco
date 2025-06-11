@@ -1,52 +1,52 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+本文件为在此代码库中使用 Claude Code (claude.ai/code) 提供指导。
 
-## About rust-eco
+## 关于 rust-eco
 
-A Rust async runtime inspired by [lua-eco](https://github.com/zhaojh329/lua-eco), providing lightweight coroutines and built-in modules for high-performance applications.
+rust-eco 是一个受 [lua-eco](https://github.com/zhaojh329/lua-eco) 启发的 Rust 异步运行时，为高性能应用程序提供轻量级协程和内置模块。
 
-### Features
+### 特性
 
-- **Async Runtime**: Built on top of Tokio with simplified APIs for common tasks
-- **Concurrent Tasks**: Easy spawning and management of lightweight async tasks
-- **File I/O**: Async file operations with comprehensive utilities
-- **Networking**: TCP/UDP sockets, HTTP client/server, WebSocket support
-- **Protocols**: MQTT client, WebSocket client/server
-- **System Utilities**: Process management, system information, environment variables
-- **Synchronization**: Async-friendly mutexes, channels, wait groups, condition variables
-- **DNS Resolution**: Async DNS lookup with caching support
-- **Logging**: Structured logging with multiple output formats
+- **异步运行时**: 基于 Tokio 构建，为常见任务提供简化的 API
+- **并发任务**: 轻松生成和管理轻量级异步任务
+- **文件 I/O**: 提供全面工具的异步文件操作
+- **网络**: TCP/UDP 套接字、HTTP 客户端/服务器、WebSocket 支持
+- **协议**: MQTT 客户端、WebSocket 客户端/服务器
+- **系统工具**: 进程管理、系统信息、环境变量
+- **同步**: 异步友好的互斥锁、通道、等待组、条件变量
+- **DNS 解析**: 支持缓存的异步 DNS 查找
+- **日志**: 多种输出格式的结构化日志
 
-## Development Commands
+## 开发命令
 
-### Building and Running
+### 构建和运行
 
 ```bash
-# Build the library
+# 构建库
 cargo build
 
-# Build with optimizations
+# 优化构建
 cargo build --release
 
-# Run the CLI demo
+# 运行 CLI 演示
 cargo run
 
-# Run CLI with verbose logging
+# 启用详细日志运行 CLI
 cargo run -- -v
 
-# Run CLI in quiet mode
+# 静默模式运行 CLI
 cargo run -- -q
 
-# Build the eco CLI tool
+# 构建 eco CLI 工具
 cargo build --release --bin eco
 ./target/release/eco
 ```
 
-### Examples
+### 示例
 
 ```bash
-# Run individual examples
+# 运行单个示例
 cargo run --example basic_concurrency
 cargo run --example file_operations
 cargo run --example http_client
@@ -55,154 +55,154 @@ cargo run --example websocket_echo
 cargo run --example channels_sync
 ```
 
-### Testing
+### 测试
 
 ```bash
-# Run all tests
+# 运行所有测试
 cargo test
 
-# Run tests with output
+# 显示输出运行测试
 cargo test -- --nocapture
 
-# Run specific test
+# 运行特定测试
 cargo test test_name
 ```
 
-## Architecture Overview
+## 架构概述
 
-rust-eco is an async runtime library inspired by lua-eco, built on top of Tokio. The architecture follows a modular design with each module providing async-friendly APIs for common tasks.
+rust-eco 是一个受 lua-eco 启发的异步运行时库，基于 Tokio 构建。架构采用模块化设计，每个模块为常见任务提供异步友好的 API。
 
-### Core Components
+### 核心组件
 
-#### Runtime Module (`src/runtime.rs`)
+#### 运行时模块 (`src/runtime.rs`)
 
-- `Eco` struct: Main runtime that wraps Tokio with simplified APIs
-- Task spawning and management with built-in shutdown handling
-- Uses `tokio::select!` for graceful shutdown coordination
+- `Eco` 结构体：包装 Tokio 并提供简化 API 的主运行时
+- 任务生成和管理，内置关闭处理
+- 使用 `tokio::select!` 进行优雅关闭协调
 
-#### Module Structure
+#### 模块结构
 
-- Each module (file, socket, http, etc.) provides high-level async APIs
-- All modules use `crate::Result<T>` type alias for consistent error handling
-- Built on Tokio primitives but with simplified interfaces
+- 每个模块（file、socket、http 等）提供高级异步 API
+- 所有模块使用 `crate::Result<T>` 类型别名进行一致的错误处理
+- 基于 Tokio 原语但具有简化接口
 
-### Key Design Patterns
+### 关键设计模式
 
-#### Error Handling
+#### 错误处理
 
-- Custom `EcoError` enum with `thiserror` for structured errors
-- Consistent `Result<T>` type across all modules
-- IO errors automatically converted via `#[from]` attribute
+- 使用 `thiserror` 的自定义 `EcoError` 枚举进行结构化错误
+- 所有模块间一致的 `Result<T>` 类型
+- 通过 `#[from]` 属性自动转换 IO 错误
 
-#### Async Task Management
+#### 异步任务管理
 
-- `spawn()` function provides lightweight task creation
-- Runtime handles task lifecycle and cleanup
-- Shutdown coordination through mpsc channels
+- `spawn()` 函数提供轻量级任务创建
+- 运行时处理任务生命周期和清理
+- 通过 mpsc 通道进行关闭协调
 
-#### Module Organization
+#### 模块组织
 
-- `lib.rs` re-exports core functionality (`Eco`, `spawn`, `sleep`, etc.)
-- Each module is self-contained with clear API boundaries
-- Protocols module contains sub-modules for MQTT, WebSocket, etc.
+- `lib.rs` 重新导出核心功能（`Eco`、`spawn`、`sleep` 等）
+- 每个模块是自包含的，具有清晰的 API 边界
+- 协议模块包含 MQTT、WebSocket 等子模块
 
-## Module Reference
+## 模块参考
 
-### Runtime (`rust_eco::runtime`)
+### 运行时 (`rust_eco::runtime`)
 
-- `Eco` - Main runtime for managing async tasks
-- `spawn()` - Spawn lightweight async tasks
-- `sleep()` - Async sleep functions
-- `Watcher` - Event watching utilities
+- `Eco` - 管理异步任务的主运行时
+- `spawn()` - 生成轻量级异步任务
+- `sleep()` - 异步睡眠函数
+- `Watcher` - 事件监听工具
 
-### Time (`rust_eco::time`)
+### 时间 (`rust_eco::time`)
 
-- `sleep_secs()`, `sleep_millis()` - Sleep functions
-- `now()`, `monotonic()` - Time utilities
-- `Timer` - Periodic timer
-- `with_timeout()` - Timeout wrapper
+- `sleep_secs()`、`sleep_millis()` - 睡眠函数
+- `now()`、`monotonic()` - 时间工具
+- `Timer` - 周期性定时器
+- `with_timeout()` - 超时包装器
 
-### File I/O (`rust_eco::file`)
+### 文件 I/O (`rust_eco::file`)
 
-- `read()`, `write()`, `append()` - Basic file operations
-- `mkdir()`, `remove_dir()` - Directory operations
-- `copy()`, `rename()` - File manipulation
-- `list_dir()`, `walk_dir()` - Directory traversal
-- `stat()` - File metadata
+- `read()`、`write()`、`append()` - 基本文件操作
+- `mkdir()`、`remove_dir()` - 目录操作
+- `copy()`、`rename()` - 文件操作
+- `list_dir()`、`walk_dir()` - 目录遍历
+- `stat()` - 文件元数据
 
-### Networking (`rust_eco::socket`)
+### 网络 (`rust_eco::socket`)
 
-- `TcpServer`, `TcpClient` - TCP networking
-- `UdpClient` - UDP networking
-- `UnixServer`, `UnixClient` - Unix domain sockets (Unix only)
+- `TcpServer`、`TcpClient` - TCP 网络
+- `UdpClient` - UDP 网络
+- `UnixServer`、`UnixClient` - Unix 域套接字（仅 Unix）
 
 ### HTTP (`rust_eco::http`)
 
-- `HttpClient` - HTTP client with GET, POST, PUT, DELETE
-- `HttpServer` - Simple HTTP server
-- JSON and form data support
-- Custom headers and request building
+- `HttpClient` - 支持 GET、POST、PUT、DELETE 的 HTTP 客户端
+- `HttpServer` - 简单 HTTP 服务器
+- JSON 和表单数据支持
+- 自定义头部和请求构建
 
-### Protocols (`rust_eco::protocols`)
+### 协议 (`rust_eco::protocols`)
 
-- `MqttClient` - MQTT 3.1.1 client
-- `WebSocketClient`, `WebSocketServer` - WebSocket support
-- Message routing and connection management
+- `MqttClient` - MQTT 3.1.1 客户端
+- `WebSocketClient`、`WebSocketServer` - WebSocket 支持
+- 消息路由和连接管理
 
-### System (`rust_eco::sys`)
+### 系统 (`rust_eco::sys`)
 
-- `pid()`, `hostname()` - System information
-- `getenv()`, `setenv()` - Environment variables
-- `Process` - Process spawning and management
-- `exec()`, `exec_shell()` - Command execution
-- Signal handling (Unix only)
+- `pid()`、`hostname()` - 系统信息
+- `getenv()`、`setenv()` - 环境变量
+- `Process` - 进程生成和管理
+- `exec()`、`exec_shell()` - 命令执行
+- 信号处理（仅 Unix）
 
-### Synchronization (`rust_eco::sync`)
+### 同步 (`rust_eco::sync`)
 
-- `Mutex` - Async mutex
-- `ReadWriteLock` - Async RW lock
-- `WaitGroup` - Wait for multiple tasks
-- `Condition` - Condition variables
-- `Once` - One-time initialization
+- `Mutex` - 异步互斥锁
+- `ReadWriteLock` - 异步读写锁
+- `WaitGroup` - 等待多个任务
+- `Condition` - 条件变量
+- `Once` - 一次性初始化
 
-### Channels (`rust_eco::channel`)
+### 通道 (`rust_eco::channel`)
 
-- `Channel` - Unbounded MPSC channels
-- `BoundedChannel` - Bounded MPSC channels
-- `Broadcast` - Broadcast channels
-- `OneShot` - One-shot channels
+- `Channel` - 无界 MPSC 通道
+- `BoundedChannel` - 有界 MPSC 通道
+- `Broadcast` - 广播通道
+- `OneShot` - 一次性通道
 
 ### DNS (`rust_eco::dns`)
 
-- `resolve()` - DNS resolution
-- `resolve_ipv4()`, `resolve_ipv6()` - IP version specific
-- `reverse_lookup()` - Reverse DNS
-- `CachedDnsResolver` - DNS with caching
+- `resolve()` - DNS 解析
+- `resolve_ipv4()`、`resolve_ipv6()` - IP 版本特定
+- `reverse_lookup()` - 反向 DNS
+- `CachedDnsResolver` - 带缓存的 DNS
 
-### Logging (`rust_eco::log`)
+### 日志 (`rust_eco::log`)
 
-- `Logger` - Basic logger
-- `FileLogger` - File-based logging
-- `StructuredLogger` - Structured logging
-- Multiple log levels and outputs
+- `Logger` - 基础日志器
+- `FileLogger` - 基于文件的日志
+- `StructuredLogger` - 结构化日志
+- 多个日志级别和输出
 
-## CLI Tool
+## CLI 工具
 
-The CLI tool (`src/bin/eco.rs`) demonstrates the runtime capabilities and serves as both a demo and a potential script executor (script execution is planned but not yet implemented).
+CLI 工具 (`src/bin/eco.rs`) 演示了运行时功能，既可作为演示也可作为潜在的脚本执行器（脚本执行计划中但尚未实现）。
 
 ```bash
-# Build the CLI
+# 构建 CLI
 cargo build --release
 
-# Run the demo
+# 运行演示
 ./target/release/eco
 
-# Run with verbose logging
+# 启用详细日志运行
 ./target/release/eco -v
 
-# Execute code directly (TODO)
+# 直接执行代码（TODO）
 ./target/release/eco -e "println!('Hello, rust-eco!');"
 
-# Run a script file (TODO)
+# 运行脚本文件（TODO）
 ./target/release/eco script.rs
 ```
