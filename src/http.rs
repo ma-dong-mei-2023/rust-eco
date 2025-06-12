@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use reqwest::{Client, Method, Response, StatusCode, Url};
 use bytes::Bytes;
 
+#[derive(Clone)]
 pub struct HttpClient {
     client: Client,
 }

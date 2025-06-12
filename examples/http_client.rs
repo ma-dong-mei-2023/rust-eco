@@ -1,9 +1,8 @@
-use rust_eco::{http, spawn, time, Eco};
+use rust_eco::{http, spawn, Eco};
 use serde_json::json;
 use std::collections::HashMap;
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let eco = Eco::new();
 
     eco.run(async {
@@ -27,7 +26,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                     Err(e) => println!("GET request failed: {}", e),
                 }
-                Ok::<(), Box<dyn std::error::Error>>(())
+                Ok::<(), Box<dyn std::error::Error + Send + Sync>>(())
             }
         });
 
@@ -52,7 +51,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                     Err(e) => println!("POST request failed: {}", e),
                 }
-                Ok::<(), Box<dyn std::error::Error>>(())
+                Ok::<(), Box<dyn std::error::Error + Send + Sync>>(())
             }
         });
 
@@ -76,7 +75,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                     Err(e) => println!("FORM request failed: {}", e),
                 }
-                Ok::<(), Box<dyn std::error::Error>>(())
+                Ok::<(), Box<dyn std::error::Error + Send + Sync>>(())
             }
         });
 
@@ -99,18 +98,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                     Err(e) => println!("CUSTOM request failed: {}", e),
                 }
-                Ok::<(), Box<dyn std::error::Error>>(())
+                Ok::<(), Box<dyn std::error::Error + Send + Sync>>(())
             }
         });
 
         // Wait for all requests to complete
         println!("Waiting for all HTTP requests to complete...");
-        tokio::try_join!(get_task, post_task, form_task, custom_request_task)?;
+        match tokio::try_join!(get_task, post_task, form_task, custom_request_task) {
+            Ok(_) => println!("\nHTTP client demo completed!"),
+            Err(e) => println!("Error in HTTP requests: {}", e),
+        }
 
-        println!("\nHTTP client demo completed!");
-
-        Ok::<(), Box<dyn std::error::Error>>(())
-    }).await?;
+        ()
+    })?;
 
     Ok(())
 }
